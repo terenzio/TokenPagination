@@ -1,0 +1,20 @@
+user-1001|user|{"action": "login", "ip": "192.168.1.1"}
+doc-1047|document|{"title": "Project Plan", "size": "2MB"}
+task-1234|task|{"priority": "high", "assigned_to": "john.doe"}
+user-1567|user|{"action": "logout", "session_duration": "45min"}
+file-1890|file|{"name": "report.pdf", "uploaded_by": "jane.smith"}
+user-2001|user|{"action": "login", "ip": "10.0.0.5"}
+task-2156|task|{"priority": "medium", "status": "in_progress"}
+doc-2345|document|{"title": "API Documentation", "version": "v1.2"}
+user-2678|user|{"action": "password_change", "strength": "strong"}
+file-2901|file|{"name": "backup.zip", "size": "150MB"}
+task-3045|task|{"priority": "low", "status": "pending"}
+user-3189|user|{"action": "login", "ip": "172.16.0.10"}
+doc-3267|document|{"title": "User Manual", "pages": 45}
+task-3456|task|{"priority": "high", "status": "completed"}
+file-3789|file|{"name": "image.jpg", "resolution": "1920x1080"}
+user-4012|user|{"action": "profile_update", "fields": ["email", "phone"]}
+doc-4234|document|{"title": "Technical Spec", "authors": ["alice", "bob"]}
+task-4567|task|{"priority": "medium", "deadline": "2024-02-15"}
+user-4890|user|{"action": "login", "device": "mobile"}
+file-5123|file|{"name": "presentation.pptx", "slides": 20}
