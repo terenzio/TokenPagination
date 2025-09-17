@@ -35,20 +35,20 @@ func NewRecordRepository(db *sql.DB) *RecordRepository {
 	return &RecordRepository{db: db}
 }
 
-// CreateTable creates the records table if it doesn't already exist.
+// CreateTable creates the resource_context table if it doesn't already exist.
 // The table includes resource_id (varchar), resource_type (varchar), context (longtext),
 // created_at and updated_at (timestamp) columns with a composite primary key on
 // (resource_type, resource_id). If the old table structure exists, it drops and recreates it.
 func (r *RecordRepository) CreateTable() error {
 	// Drop the old table if it exists to handle schema migration
-	dropQuery := "DROP TABLE IF EXISTS records"
+	dropQuery := "DROP TABLE IF EXISTS resource_context"
 	if _, err := r.db.Exec(dropQuery); err != nil {
 		return err
 	}
 
 	// Create the new table with updated schema
 	createQuery := `
-	CREATE TABLE records (
+	CREATE TABLE resource_context (
 		resource_id varchar(128) not null,
 		resource_type varchar(128) not null,
 		context longtext default null,
@@ -67,7 +67,7 @@ func (r *RecordRepository) CreateTable() error {
 // composite key (resource_type, resource_id) already exists.
 func (r *RecordRepository) Insert(resourceID, resourceType string, context *string) error {
 	now := time.Now()
-	query := "INSERT INTO records (resource_id, resource_type, context, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
+	query := "INSERT INTO resource_context (resource_id, resource_type, context, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
 	_, err := r.db.Exec(query, resourceID, resourceType, context, now, now)
 	return err
 }
@@ -76,7 +76,7 @@ func (r *RecordRepository) Insert(resourceID, resourceType string, context *stri
 // This method returns all records without pagination and is useful for
 // getting a complete dataset or when pagination is not needed.
 func (r *RecordRepository) GetAll() ([]Record, error) {
-	query := "SELECT resource_id, resource_type, context, created_at, updated_at FROM records ORDER BY created_at DESC"
+	query := "SELECT resource_id, resource_type, context, created_at, updated_at FROM resource_context ORDER BY created_at DESC"
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -145,7 +145,7 @@ func (r *RecordRepository) GetPaginated(continuationToken string, pageSize int) 
 	var args []any
 
 	if continuationToken == "" {
-		query = "SELECT resource_id, resource_type, context, created_at, updated_at FROM records ORDER BY created_at DESC, resource_type DESC, resource_id DESC LIMIT ?"
+		query = "SELECT resource_id, resource_type, context, created_at, updated_at FROM resource_context ORDER BY created_at DESC, resource_type DESC, resource_id DESC LIMIT ?"
 		args = []any{pageSize + 1}
 	} else {
 		lastResourceType, lastResourceID, lastCreatedAt, err := r.decodeContinuationToken(continuationToken)
@@ -153,7 +153,7 @@ func (r *RecordRepository) GetPaginated(continuationToken string, pageSize int) 
 			return nil, err
 		}
 
-		query = `SELECT resource_id, resource_type, context, created_at, updated_at FROM records
+		query = `SELECT resource_id, resource_type, context, created_at, updated_at FROM resource_context
 				 WHERE (created_at < ? OR (created_at = ? AND resource_type < ?) OR (created_at = ? AND resource_type = ? AND resource_id < ?))
 				 ORDER BY created_at DESC, resource_type DESC, resource_id DESC LIMIT ?`
 		args = []any{lastCreatedAt, lastCreatedAt, lastResourceType, lastCreatedAt, lastResourceType, lastResourceID, pageSize + 1}

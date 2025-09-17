@@ -245,7 +245,7 @@ This script attempts all the above methods and provides comprehensive test valid
 
 ## Database Schema
 
-The application creates a `records` table with the following structure:
+The application creates a `resource_context` table with the following structure:
 - `resource_id`: varchar(128) NOT NULL - stores the resource identifier (e.g., "user-123", "doc-456")
 - `resource_type`: varchar(128) NOT NULL - stores the type of resource (e.g., "user", "document", "task", "file")
 - `context`: longtext DEFAULT NULL - stores optional JSON context data with additional metadata

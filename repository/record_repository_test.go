@@ -33,10 +33,10 @@ func TestCreateTable(t *testing.T) {
 	defer db.Close()
 
 	// Expect DROP TABLE query first
-	mock.ExpectExec("DROP TABLE IF EXISTS records").WillReturnResult(sqlmock.NewResult(0, 0))
+	mock.ExpectExec("DROP TABLE IF EXISTS resource_context").WillReturnResult(sqlmock.NewResult(0, 0))
 
 	// Expect CREATE TABLE query
-	mock.ExpectExec(`CREATE TABLE records \(
+	mock.ExpectExec(`CREATE TABLE resource_context \(
 		resource_id varchar\(128\) not null,
 		resource_type varchar\(128\) not null,
 		context longtext default null,
@@ -55,10 +55,10 @@ func TestCreateTable_Error(t *testing.T) {
 	defer db.Close()
 
 	// Expect DROP TABLE to succeed
-	mock.ExpectExec("DROP TABLE IF EXISTS records").WillReturnResult(sqlmock.NewResult(0, 0))
+	mock.ExpectExec("DROP TABLE IF EXISTS resource_context").WillReturnResult(sqlmock.NewResult(0, 0))
 
 	// Expect CREATE TABLE to fail
-	mock.ExpectExec(`CREATE TABLE records`).WillReturnError(assert.AnError)
+	mock.ExpectExec(`CREATE TABLE resource_context`).WillReturnError(assert.AnError)
 
 	err := repo.CreateTable()
 	assert.Error(t, err)
@@ -73,7 +73,7 @@ func TestInsert(t *testing.T) {
 	resourceType := "user"
 	context := `{"action": "login"}`
 
-	mock.ExpectExec(`INSERT INTO records \(resource_id, resource_type, context, created_at, updated_at\) VALUES \(\?, \?, \?, \?, \?\)`).
+	mock.ExpectExec(`INSERT INTO resource_context \(resource_id, resource_type, context, created_at, updated_at\) VALUES \(\?, \?, \?, \?, \?\)`).
 		WithArgs(resourceID, resourceType, &context, sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -89,7 +89,7 @@ func TestInsert_WithNilContext(t *testing.T) {
 	resourceID := "doc-456"
 	resourceType := "document"
 
-	mock.ExpectExec(`INSERT INTO records \(resource_id, resource_type, context, created_at, updated_at\) VALUES \(\?, \?, \?, \?, \?\)`).
+	mock.ExpectExec(`INSERT INTO resource_context \(resource_id, resource_type, context, created_at, updated_at\) VALUES \(\?, \?, \?, \?, \?\)`).
 		WithArgs(resourceID, resourceType, nil, sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -105,7 +105,7 @@ func TestInsert_Error(t *testing.T) {
 	resourceID := "user-123"
 	resourceType := "user"
 
-	mock.ExpectExec(`INSERT INTO records`).
+	mock.ExpectExec(`INSERT INTO resource_context`).
 		WillReturnError(assert.AnError)
 
 	err := repo.Insert(resourceID, resourceType, nil)
@@ -124,7 +124,7 @@ func TestGetAll(t *testing.T) {
 		AddRow("user-123", "user", &context1, now, now).
 		AddRow("doc-456", "document", nil, now, now)
 
-	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM records ORDER BY created_at DESC`).
+	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM resource_context ORDER BY created_at DESC`).
 		WillReturnRows(rows)
 
 	records, err := repo.GetAll()
@@ -146,7 +146,7 @@ func TestGetAll_Error(t *testing.T) {
 	db, mock, repo := setupTestDB(t)
 	defer db.Close()
 
-	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM records`).
+	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM resource_context`).
 		WillReturnError(assert.AnError)
 
 	records, err := repo.GetAll()
@@ -211,7 +211,7 @@ func TestGetPaginated_FirstPage(t *testing.T) {
 		AddRow("user-5", "user", nil, now, now).
 		AddRow("user-6", "user", nil, now, now)
 
-	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM records ORDER BY created_at DESC, resource_type DESC, resource_id DESC LIMIT \?`).
+	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM resource_context ORDER BY created_at DESC, resource_type DESC, resource_id DESC LIMIT \?`).
 		WithArgs(6). // pageSize + 1
 		WillReturnRows(rows)
 
@@ -233,7 +233,7 @@ func TestGetPaginated_WithToken(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"resource_id", "resource_type", "context", "created_at", "updated_at"}).
 		AddRow("user-6", "user", nil, now, now)
 
-	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM records WHERE \(created_at < \? OR \(created_at = \? AND resource_type < \?\) OR \(created_at = \? AND resource_type = \? AND resource_id < \?\)\) ORDER BY created_at DESC, resource_type DESC, resource_id DESC LIMIT \?`).
+	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM resource_context WHERE \(created_at < \? OR \(created_at = \? AND resource_type < \?\) OR \(created_at = \? AND resource_type = \? AND resource_id < \?\)\) ORDER BY created_at DESC, resource_type DESC, resource_id DESC LIMIT \?`).
 		WithArgs(now, now, "user", now, "user", "user-5", 6).
 		WillReturnRows(rows)
 
@@ -259,7 +259,7 @@ func TestGetPaginated_DefaultPageSize(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"resource_id", "resource_type", "context", "created_at", "updated_at"})
 
-	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM records ORDER BY created_at DESC, resource_type DESC, resource_id DESC LIMIT \?`).
+	mock.ExpectQuery(`SELECT resource_id, resource_type, context, created_at, updated_at FROM resource_context ORDER BY created_at DESC, resource_type DESC, resource_id DESC LIMIT \?`).
 		WithArgs(DefaultPageSize + 1).
 		WillReturnRows(rows)
 
