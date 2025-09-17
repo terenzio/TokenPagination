@@ -8,14 +8,22 @@ import (
 	"tokenpagination/repository"
 )
 
+// RecordRepositoryInterface defines the interface for record repository operations
+type RecordRepositoryInterface interface {
+	CreateTable() error
+	Insert(resourceID, resourceType string, context *string) error
+	GetAll() ([]repository.Record, error)
+	GetPaginated(continuationToken string, pageSize int) (*repository.PaginatedResult, error)
+}
+
 type RecordHandler struct {
-	repo *repository.RecordRepository
+	repo RecordRepositoryInterface
 }
 
 // NewRecordHandler creates and returns a new RecordHandler instance.
-// It takes a RecordRepository and returns a handler for managing HTTP
+// It takes a RecordRepositoryInterface and returns a handler for managing HTTP
 // requests related to record operations including creation and retrieval.
-func NewRecordHandler(repo *repository.RecordRepository) *RecordHandler {
+func NewRecordHandler(repo RecordRepositoryInterface) *RecordHandler {
 	return &RecordHandler{repo: repo}
 }
 
@@ -66,8 +74,12 @@ func (h *RecordHandler) GetRecordsPaginated(c *gin.Context) {
 	pageSize := 5
 
 	if pageSizeStr := c.Query("page_size"); pageSizeStr != "" {
-		if ps, err := strconv.Atoi(pageSizeStr); err == nil && ps > 0 && ps <= 100 {
-			pageSize = ps
+		if ps, err := strconv.Atoi(pageSizeStr); err == nil && ps > 0 {
+			if ps > 100 {
+				pageSize = 100 // Cap at 100
+			} else {
+				pageSize = ps
+			}
 		}
 	}
 

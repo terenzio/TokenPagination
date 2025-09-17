@@ -171,6 +171,77 @@ GET /api/v1/records/paginated?continuation_token=dGFza3x0YXNrLTQ1Njd8MTcwNTM5ODQ
 - JSON and query parameter support for record creation
 - Automatic table creation with proper schema
 - Docker containerization with proper networking
+- **Comprehensive unit tests** for repository and handler layers
+
+## Testing
+
+The project includes comprehensive unit tests for both the repository and handler layers.
+
+### Running Tests
+
+```bash
+# Recommended: Run tests with CGO disabled (works on all platforms)
+CGO_ENABLED=0 go test -v ./...
+
+# Standard go test (may have issues on some macOS configurations)
+go test ./...
+
+# Run tests with verbose output
+go test -v ./...
+
+# Run specific package tests
+go test ./repository
+go test ./handler
+
+# Run tests with coverage
+go test -cover ./...
+
+# Enhanced test script with multiple methods
+./test.sh
+```
+
+### macOS Testing Solutions
+
+If you encounter `missing LC_UUID load command` errors on macOS, try these solutions:
+
+#### Method 1: Disable CGO (Recommended)
+```bash
+CGO_ENABLED=0 go test -v ./...
+```
+This is the most reliable method and works consistently across all macOS versions.
+
+**Why this works**: The LC_UUID error occurs because macOS requires specific metadata in executable files when CGO (Go's C interface) is enabled. Since this project uses pure Go dependencies (no C libraries), disabling CGO creates simpler binaries that avoid macOS executable format restrictions. This results in faster, more reliable test execution without any functional limitations.
+
+#### Method 2: Individual Package Testing
+```bash
+go test -v ./repository
+go test -v ./handler
+```
+
+#### Method 3: Docker-based Testing
+```bash
+docker run --rm -v "$(pwd)":/app -w /app golang:1.21-alpine go test -v ./...
+```
+
+#### Method 4: Enhanced Test Script
+The included `test.sh` script tries multiple methods automatically:
+```bash
+./test.sh
+```
+
+This script attempts all the above methods and provides comprehensive test validation even if some methods fail due to macOS-specific issues.
+
+### Test Coverage
+
+- **Repository Layer**: Tests for database operations, pagination logic, and continuation token encoding/decoding
+- **Handler Layer**: Tests for HTTP request handling, input validation, and error responses
+- **Mock Database**: Uses `sqlmock` for isolated database testing
+- **Mock Repository**: Uses `testify/mock` for handler testing
+
+### Test Dependencies
+
+- `github.com/stretchr/testify` - Assertions and mocking framework
+- `github.com/DATA-DOG/go-sqlmock` - SQL mock driver for testing database interactions
 
 ## Database Schema
 
